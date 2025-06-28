@@ -1,5 +1,65 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 using namespace std;
+void student() {
+    ifstream inData("studentDB.txt");
+    string storedUsername, storedPassword, borrowRequest, returnRequest;
+    string inputUsername, inputPassword;
+    int balance, option;
+    bool loginSuccess = false;
+
+    cout << "Enter your username: ";
+    cin >> inputUsername;
+    cout << "Enter your password: ";
+    cin >> inputPassword;
+
+    while (inData >> storedUsername >> storedPassword >> balance >> borrowRequest >> returnRequest) {
+        if (inputUsername == storedUsername && inputPassword == storedPassword) {
+            loginSuccess = true;
+            break;
+        }
+    }
+
+    inData.close();
+
+    if (loginSuccess) {
+        cout << "Successfully logged in!..\n\n";
+        do {
+            cout << "Select one option below\n";
+            cout << "1. View Personal Details\n";
+            cout << "2. Request to borrow/rent a book\n";
+            cout << "3. Return borrowed/rented book\n";
+            cout << "4. Change password\n";
+            cout << "5. Exit\n\n";
+            cout << "Enter option to proceed: ";
+            cin >> option;
+
+            switch (option) {
+                case 1:
+                    // profileDetail();
+                    break;
+                case 2:
+                    // RequestBorrowBook();
+                    break;
+                case 3:
+                    // RequestCheckoutBook();
+                    break;
+                case 4:
+                    // changePassword();
+                    break;
+                case 5:
+                    cout << "Logging out...";
+                    break;
+                default:
+                    cout << "Invalid option. Try again\n";
+            }
+        } while (option != 5);
+    } else {
+        cout << "Invalid username or password";
+    }
+}
+
 void librarian(){
     ifstream inData;
     string storedUsername, storedPassword;
@@ -62,7 +122,7 @@ int main()
     cin>>role;
     if(role==1)
     {
-        //student();
+        student();
     }else if(role==2)
     {
         librarian();
