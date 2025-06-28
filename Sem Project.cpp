@@ -2,6 +2,61 @@
 #include <fstream>
 #include <string>
 using namespace std;
+void changeAdminPassword(){
+    string username, password, oldPass, newPass;
+    ifstream in("admin.txt");
+    in >> username >> password;
+    in.close();
+
+    cout << "Enter your current password: ";
+    cin >> oldPass;
+    if (oldPass == password) {
+        cout << "Enter your new password: ";
+        cin >> newPass;
+
+        ofstream out("admin.txt");
+        out << username << " " << newPass;
+        out.close();
+
+        cout << "Password changed successfully!\n";
+    } else {
+        cout << "Current password is incorrect.\n";
+    }
+}
+void changePassword(const string& username) {
+    string oldPass, newPass;
+    string fileUsername, filePassword, borrowRequest, returnRequest;
+    double balance;
+    bool changed = false;
+
+    ifstream in("studentDB.txt");
+    ofstream out("StudentDBupdated.txt");
+
+    while (in >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (fileUsername == username) {
+            cout << "Enter your current password: ";
+            cin >> oldPass;
+            if (oldPass == filePassword) {
+                cout << "Enter your new password: ";
+                cin >> newPass;
+                filePassword = newPass;
+                changed = true;
+            } else {
+                cout << "Current password is incorrect.\n";
+            }
+        }
+        out << fileUsername << " " << filePassword << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+    }
+    in.close();
+    out.close();
+
+    remove("studentDB.txt");
+    rename("StudentDBupdated.txt", "studentDB.txt");
+
+    if (changed) {
+        cout << "Password changed successfully!\n";
+    }
+}
 void student() {
     ifstream inData("studentDB.txt");
     string storedUsername, storedPassword, borrowRequest, returnRequest;
@@ -46,7 +101,7 @@ void student() {
                     // RequestCheckoutBook();
                     break;
                 case 4:
-                    // changePassword();
+                    changePassword(inputUsername);
                     break;
                 case 5:
                     cout << "Logging out...";
@@ -96,7 +151,7 @@ void librarian(){
                 //acceptReturn();
                 break;
             case 4:
-                //changePassword();
+                changeAdminPassword();
                 break;
             case 5:
                 cout<<"Logging out...";
