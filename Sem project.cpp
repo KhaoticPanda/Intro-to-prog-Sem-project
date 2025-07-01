@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 using namespace std;
-void approveBorrowRequest(){
+void approveBorrowRequest() {
     string username, password, borrowRequest, returnRequest;
     int balance;
     ifstream bookFile("booksDB.txt");
@@ -13,43 +13,53 @@ void approveBorrowRequest(){
     int bookCopies[MAX_BOOKS];
     int bookCount = 0;
 
-    while(bookFile >> bookName >> copiesAvailable) {
-            bookNames[bookCount] = bookName;
-            bookCopies[bookCount] = copiesAvailable;
-            bookCount++;
+    while (bookFile >> bookName >> copiesAvailable) {
+        bookNames[bookCount] = bookName;
+        bookCopies[bookCount] = copiesAvailable;
+        bookCount++;
     }
+    bookFile.close();
+
     ifstream studentFile("studentDB.txt");
     ofstream updatedFile("updatedDB.txt");
-    while(studentFile>>username>>password>>balance>>borrowRequest>>returnRequest)
-    {
-        if(borrowRequest!="none")
-        {
-            for(int i=0;i<bookCount;i++)
-                if(bookNames[i]== borrowRequest)
-            {
-                if(bookCopies[i]>0)
-                {
-                    borrowRequest="none";
-                    bookCopies[i]=bookCopies[i]-1;
-                }
-                else{
-                    cout<<"Book not availiable for "<<username;
+
+    bool anyRequestFound = false;
+
+    while (studentFile >> username >> password >> balance >> borrowRequest >> returnRequest) {
+        if (borrowRequest != "none") {
+            for (int i = 0; i < bookCount; i++) {
+                if (bookNames[i] == borrowRequest) {
+                    if (bookCopies[i] > 0) {
+                        borrowRequest = "none";
+                        bookCopies[i] = bookCopies[i] - 1;
+                        anyRequestFound = true;
+                    } else {
+                        cout << "Book not available for " << username << endl;
+                    }
+                    break;
                 }
             }
         }
-            updatedFile << username << " " << password << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+        updatedFile << username << " " << password << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
     }
+
     studentFile.close();
-    bookFile.close();
+    updatedFile.close();
+
+    if (!anyRequestFound) {
+        cout << "No borrow requests found.\n";
+    }
+
     ofstream bookOut("booksDB.txt");
     for (int i = 0; i < bookCount; i++) {
-            bookOut << bookNames[i] << " " << bookCopies[i] << endl;
+        bookOut << bookNames[i] << " " << bookCopies[i] << endl;
     }
     bookOut.close();
-    updatedFile.close();
+
     remove("studentDB.txt");
     rename("updatedDB.txt", "studentDB.txt");
 }
+
 // A FUNCTION TO VIEW PERSONAL DETAILS OF STUDENT
 void viewPersonalDetails(const string& username) {
     ifstream in("studentDB.txt");
@@ -220,7 +230,7 @@ void librarian(){
     inData.close();
     cout<<"Enter librarian username: ";
     cin>>username;
-    cout<<"Enter librarian password: ";
+    cout<<"\nEnter librarian password: ";
     cin>>password;
     if(username==storedUsername && password==storedPassword)
     {
