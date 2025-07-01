@@ -230,7 +230,7 @@ void librarian(){
     inData.close();
     cout<<"Enter librarian username: ";
     cin>>username;
-    cout<<"\nEnter librarian password: ";
+    cout<<"Enter librarian password: ";
     cin>>password;
     if(username==storedUsername && password==storedPassword)
     {
