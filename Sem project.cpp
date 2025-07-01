@@ -2,6 +2,43 @@
 #include <fstream>
 #include <string>
 using namespace std;
+// A FUNCTION TO ACCEPT RETURN OF A BOOK
+void acceptReturn() {
+    string username, fileUsername, filePassword, borrowRequest, returnRequest;
+    double balance;
+    bool found = false;
+
+    cout << "Enter student username who is returning a book: ";
+    cin >> username;
+
+    ifstream in("studentDB.txt");
+    ofstream out("StudentDBupdated.txt");
+
+    while (in >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (fileUsername == username) {
+            found = true;
+            if (returnRequest == "none") {
+                cout << "No book return request found for user: " << username << endl;
+                out << fileUsername << " " << filePassword << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+                continue;
+            }
+            cout << "Processing return of book: " << returnRequest << endl;
+            returnRequest = "none"; // Clear return request
+            cout << "Book return accepted for user: " << username << endl;
+        }
+        out << fileUsername << " " << filePassword << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+    }
+
+    in.close();
+    out.close();
+
+    remove("studentDB.txt");
+    rename("StudentDBupdated.txt", "studentDB.txt");
+
+    if (!found) {
+        cout << "No student found with username: " << username << endl;
+    }
+}
 void approveBorrowRequest() {
     string username, password, borrowRequest, returnRequest;
     int balance;
