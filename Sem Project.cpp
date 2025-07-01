@@ -2,6 +2,22 @@
 #include <fstream>
 #include <string>
 using namespace std;
+void registerStudent() {
+    ofstream file("studentDB.txt", ios::app);
+    string username, password;
+    double balance = 1000;
+    string borrowRequest = "none";
+    string returnRequest = "none";
+
+    cout << "Enter new student's username: ";
+    cin >> username;
+    cout << "Enter new student's password: ";
+    cin >> password;
+
+    file << username << " " << password << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+    file.close();
+    cout << "Student added successfully.\n";
+}
 void changeAdminPassword(){
     string username, password, oldPass, newPass;
     ifstream in("admin.txt");
@@ -142,7 +158,7 @@ void librarian(){
         switch(option)
         {
             case 1:
-                //registerStudent();
+                registerStudent();
                 break;
             case 2:
                 //approveBorrowRequest();
