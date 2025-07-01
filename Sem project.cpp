@@ -240,7 +240,7 @@ void librarian(){
         cout<<"Select one option below\n\t";
         cout<<"1.Register new student\n\t";
         cout<<"2.Approve student\'s request to borrow book\n\t";
-        cout<<"3.Accept returned book and update system\n\t";
+        cout<<"3.Accept returned book\n\t";
         cout<<"4.Change password\n\t";
         cout<<"5.Exit\n\n";
         cout<<"Enter option to proceed: ";
