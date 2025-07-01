@@ -2,6 +2,227 @@
 #include <fstream>
 #include <string>
 using namespace std;
+void requestBorrowBook(const string& username) {
+    string bookName;
+    cout << "Enter the name of the book you want to borrow: ";
+    cin >> bookName;
+
+    ifstream in("studentDB.txt");
+    ofstream out("StudentDBupdated.txt");
+
+    string fileUsername, filePassword, borrowRequest, returnRequest;
+    double balance;
+    bool found = false;
+
+    while (in >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (fileUsername == username) {
+            found = true;
+            if (borrowRequest == "none") {
+                borrowRequest = bookName;
+            } else {
+                borrowRequest += "," + bookName;
+            }
+            cout << "Borrow request submitted successfully.\n";
+        }
+
+        out << fileUsername << " " << filePassword << " " << balance << " "
+            << borrowRequest << " " << returnRequest << endl;
+    }
+
+    in.close();
+    out.close();
+
+    remove("studentDB.txt");
+    rename("StudentDBupdated.txt", "studentDB.txt");
+
+    if (!found) {
+        cout << "Username not found in the database.\n";
+    }
+}
+void acceptReturn() {
+    string fileUsername, filePassword, borrowRequest, returnRequest;
+    double balance;
+    bool anyReturnFound = false;
+
+    // First, scan and show students with return requests
+    ifstream preview("studentDB.txt");
+    cout << "\n--- Students with Pending Return Requests ---\n";
+    while (preview >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (returnRequest != "none") {
+            cout << " - " << fileUsername << " wants to return: " << returnRequest << endl;
+            anyReturnFound = true;
+        }
+    }
+    preview.close();
+
+    if (!anyReturnFound) {
+        cout << "No return requests found.\n";
+        return;  // Exit early since there's nothing to do
+    }
+
+    // Ask admin which student to process
+    string username;
+    cout << "\nEnter student username to process return: ";
+    cin >> username;
+
+    // Load book inventory
+    const int MAX_BOOKS = 100;
+    string bookNames[MAX_BOOKS];
+    int bookCopies[MAX_BOOKS];
+    int bookCount = 0;
+
+    ifstream bookIn("booksDB.txt");
+    string bookName;
+    int copiesAvailable;
+
+    while (bookIn >> bookName >> copiesAvailable) {
+        bookNames[bookCount] = bookName;
+        bookCopies[bookCount] = copiesAvailable;
+        bookCount++;
+    }
+    bookIn.close();
+
+    // Process the selected student's return
+    ifstream in("studentDB.txt");
+    ofstream out("StudentDBupdated.txt");
+    bool studentFound = false;
+
+    while (in >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (fileUsername == username) {
+            studentFound = true;
+            if (returnRequest == "none") {
+                cout << "This user has no return request.\n";
+            } else {
+                cout << "Processing return of book: " << returnRequest << endl;
+                for (int i = 0; i < bookCount; i++) {
+                    if (bookNames[i] == returnRequest) {
+                        bookCopies[i]++;
+                        break;
+                    }
+                }
+                returnRequest = "none";
+                cout << "Book return accepted for user: " << username << endl;
+            }
+        }
+
+        out << fileUsername << " " << filePassword << " " << balance << " "
+            << borrowRequest << " " << returnRequest << endl;
+    }
+
+    in.close();
+    out.close();
+
+    // Update student database
+    remove("studentDB.txt");
+    rename("StudentDBupdated.txt", "studentDB.txt");
+
+    // Update book database
+    ofstream bookOut("booksDB.txt");
+    for (int i = 0; i < bookCount; i++) {
+        bookOut << bookNames[i] << " " << bookCopies[i] << endl;
+    }
+    bookOut.close();
+
+    if (!studentFound) {
+        cout << "No student found with username: " << username << endl;
+    }
+}
+void approveBorrowRequest() {
+    string username, password, borrowRequest, returnRequest;
+    int balance;
+
+    ifstream bookFile("booksDB.txt");
+    string bookName;
+    int copiesAvailable;
+
+    const int MAX_BOOKS = 100;
+    string bookNames[MAX_BOOKS];
+    int bookCopies[MAX_BOOKS];
+    int bookCount = 0;
+
+    while (bookFile >> bookName >> copiesAvailable) {
+        bookNames[bookCount] = bookName;
+        bookCopies[bookCount] = copiesAvailable;
+        bookCount++;
+    }
+    bookFile.close();
+
+    ifstream studentFile("studentDB.txt");
+    ofstream updatedFile("updatedDB.txt");
+
+    bool anyRequestFound = false;
+
+    while (studentFile >> username >> password >> balance >> borrowRequest >> returnRequest) {
+        if (borrowRequest != "none") {
+            for (int i = 0; i < bookCount; i++) {
+                if (bookNames[i] == borrowRequest) {
+                    if (bookCopies[i] > 0) {
+                        borrowRequest = "none";
+                        bookCopies[i] -= 1;
+                        anyRequestFound = true;
+                    } else {
+                        cout << "Book not available for " << username << endl;
+                    }
+                    break;
+                }
+            }
+        }
+        updatedFile << username << " " << password << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+    }
+
+    studentFile.close();
+    updatedFile.close();
+
+    if (!anyRequestFound) {
+        cout << "No borrow requests found.\n\n";
+    }
+
+    ofstream bookOut("booksDB.txt");
+    for (int i = 0; i < bookCount; i++) {
+        bookOut << bookNames[i] << " " << bookCopies[i] << endl;
+    }
+    bookOut.close();
+
+    remove("studentDB.txt");
+    rename("updatedDB.txt", "studentDB.txt");
+}
+void requestReturnBook(const string& username) {
+    string bookName;
+    cout << "Enter the name of the book you want to return: ";
+    cin >> bookName;
+
+    ifstream in("studentDB.txt");
+    ofstream out("StudentDBupdated.txt");
+
+    string fileUsername, filePassword, borrowRequest, returnRequest;
+    double balance;
+    bool found = false;
+
+    while (in >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (fileUsername == username) {
+            found = true;
+            if (returnRequest != "none") {
+                cout << "You already have a pending return request.\n";
+            } else {
+                returnRequest = bookName;
+                cout << "Return request submitted successfully.\n";
+            }
+        }
+        out << fileUsername << " " << filePassword << " " << balance << " "
+            << borrowRequest << " " << returnRequest << endl;
+    }
+
+    in.close();
+    out.close();
+
+    remove("studentDB.txt");
+    rename("StudentDBupdated.txt", "studentDB.txt");
+
+    if (!found) {
+        cout << "Username not found in the database.\n";
+    }
+}
+
 // A FUNCTION TO VIEW PERSONAL DETAILS OF STUDENT
 void viewPersonalDetails(const string& username) {
     ifstream in("studentDB.txt");
@@ -16,6 +237,7 @@ void viewPersonalDetails(const string& username) {
             cout << "Account Balance: " << balance << endl;
             cout << "Borrow Request: " << borrowRequest << endl;
             cout << "Return Request: " << returnRequest << endl;
+            cout<<"--------------------------\n\n";
             found = true;
             break;
         }
@@ -130,8 +352,8 @@ void student() {
         do {
             cout << "Select one option below\n";
             cout << "1. View Personal Details\n";
-            cout << "2. Request to borrow/rent a book\n";
-            cout << "3. Return borrowed/rented book\n";
+            cout << "2. Request to borrow a book\n";
+            cout << "3. Return borrowed book\n";
             cout << "4. Change password\n";
             cout << "5. Exit\n\n";
             cout << "Enter option to proceed: ";
@@ -142,10 +364,10 @@ void student() {
                      viewPersonalDetails(inputUsername);
                     break;
                 case 2:
-                    // RequestBorrowBook();
+                    requestBorrowBook(inputUsername);
                     break;
                 case 3:
-                    // RequestCheckoutBook();
+                    requestReturnBook(inputUsername);
                     break;
                 case 4:
                     changePassword(inputUsername);
@@ -181,7 +403,7 @@ void librarian(){
         cout<<"Select one option below\n\t";
         cout<<"1.Register new student\n\t";
         cout<<"2.Approve student\'s request to borrow book\n\t";
-        cout<<"3.Accept returned book and update system\n\t";
+        cout<<"3.Accept returned book\n\t";
         cout<<"4.Change password\n\t";
         cout<<"5.Exit\n\n";
         cout<<"Enter option to proceed: ";
@@ -192,10 +414,10 @@ void librarian(){
                 registerStudent();
                 break;
             case 2:
-                //approveBorrowRequest();
+                approveBorrowRequest();
                 break;
             case 3:
-                //acceptReturn();
+                acceptReturn();
                 break;
             case 4:
                 changeAdminPassword();
