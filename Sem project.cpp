@@ -2,6 +2,54 @@
 #include <fstream>
 #include <string>
 using namespace std;
+void approveBorrowRequest(){
+    string username, password, borrowRequest, returnRequest;
+    int balance;
+    ifstream bookFile("booksDB.txt");
+    string bookName;
+    int copiesAvailable;
+    const int MAX_BOOKS = 100;
+    string bookNames[MAX_BOOKS];
+    int bookCopies[MAX_BOOKS];
+    int bookCount = 0;
+
+    while(bookFile >> bookName >> copiesAvailable) {
+            bookNames[bookCount] = bookName;
+            bookCopies[bookCount] = copiesAvailable;
+            bookCount++;
+    }
+    ifstream studentFile("studentDB.txt");
+    ofstream updatedFile("updatedDB.txt");
+    while(studentFile>>username>>password>>balance>>borrowRequest>>returnRequest)
+    {
+        if(borrowRequest!="none")
+        {
+            for(int i=0;i<bookCount;i++)
+                if(bookNames[i]== borrowRequest)
+            {
+                if(bookCopies[i]>0)
+                {
+                    borrowRequest="none";
+                    bookCopies[i]=bookCopies[i]-1;
+                }
+                else{
+                    cout<<"Book not availiable for "<<username;
+                }
+            }
+        }
+            updatedFile << username << " " << password << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+    }
+    studentFile.close();
+    bookFile.close();
+    ofstream bookOut("booksDB.txt");
+    for (int i = 0; i < bookCount; i++) {
+            bookOut << bookNames[i] << " " << bookCopies[i] << endl;
+    }
+    bookOut.close();
+    updatedFile.close();
+    remove("studentDB.txt");
+    rename("updatedDB.txt", "studentDB.txt");
+}
 // A FUNCTION TO VIEW PERSONAL DETAILS OF STUDENT
 void viewPersonalDetails(const string& username) {
     ifstream in("studentDB.txt");
@@ -172,7 +220,7 @@ void librarian(){
     inData.close();
     cout<<"Enter librarian username: ";
     cin>>username;
-    cout<<"\nEnter librarian password: ";
+    cout<<"Enter librarian password: ";
     cin>>password;
     if(username==storedUsername && password==storedPassword)
     {
@@ -192,7 +240,7 @@ void librarian(){
                 registerStudent();
                 break;
             case 2:
-                //approveBorrowRequest();
+                approveBorrowRequest();
                 break;
             case 3:
                 //acceptReturn();
