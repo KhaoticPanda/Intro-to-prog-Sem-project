@@ -4,41 +4,94 @@
 using namespace std;
 // A FUNCTION TO ACCEPT RETURN OF A BOOK
 void acceptReturn() {
-    string username, fileUsername, filePassword, borrowRequest, returnRequest;
+    string fileUsername, filePassword, borrowRequest, returnRequest;
     double balance;
-    bool found = false;
+    bool anyReturnFound = false;
 
-    cout << "Enter student username who is returning a book: ";
+    // First, scan and show students with return requests
+    ifstream preview("studentDB.txt");
+    cout << "\n--- Students with Pending Return Requests ---\n";
+    while (preview >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
+        if (returnRequest != "none") {
+            cout << " - " << fileUsername << " wants to return: " << returnRequest << endl;
+            anyReturnFound = true;
+        }
+    }
+    preview.close();
+
+    if (!anyReturnFound) {
+        cout << "No return requests found.\n";
+        return;  // Exit early since there's nothing to do
+    }
+
+    // Ask admin which student to process
+    string username;
+    cout << "\nEnter student username to process return: ";
     cin >> username;
 
+    // Load book inventory
+    const int MAX_BOOKS = 100;
+    string bookNames[MAX_BOOKS];
+    int bookCopies[MAX_BOOKS];
+    int bookCount = 0;
+
+    ifstream bookIn("booksDB.txt");
+    string bookName;
+    int copiesAvailable;
+
+    while (bookIn >> bookName >> copiesAvailable) {
+        bookNames[bookCount] = bookName;
+        bookCopies[bookCount] = copiesAvailable;
+        bookCount++;
+    }
+    bookIn.close();
+
+    // Process the selected student's return
     ifstream in("studentDB.txt");
     ofstream out("StudentDBupdated.txt");
+    bool studentFound = false;
 
     while (in >> fileUsername >> filePassword >> balance >> borrowRequest >> returnRequest) {
         if (fileUsername == username) {
-            found = true;
+            studentFound = true;
             if (returnRequest == "none") {
-                cout << "No book return request found for user: " << username << endl;
-                out << fileUsername << " " << filePassword << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
-                continue;
+                cout << "This user has no return request.\n";
+            } else {
+                cout << "Processing return of book: " << returnRequest << endl;
+                for (int i = 0; i < bookCount; i++) {
+                    if (bookNames[i] == returnRequest) {
+                        bookCopies[i]++;
+                        break;
+                    }
+                }
+                returnRequest = "none";
+                cout << "Book return accepted for user: " << username << endl;
             }
-            cout << "Processing return of book: " << returnRequest << endl;
-            returnRequest = "none"; // Clear return request
-            cout << "Book return accepted for user: " << username << endl;
         }
-        out << fileUsername << " " << filePassword << " " << balance << " " << borrowRequest << " " << returnRequest << endl;
+
+        out << fileUsername << " " << filePassword << " " << balance << " "
+            << borrowRequest << " " << returnRequest << endl;
     }
 
     in.close();
     out.close();
 
+    // Update student database
     remove("studentDB.txt");
     rename("StudentDBupdated.txt", "studentDB.txt");
 
-    if (!found) {
+    // Update book database
+    ofstream bookOut("booksDB.txt");
+    for (int i = 0; i < bookCount; i++) {
+        bookOut << bookNames[i] << " " << bookCopies[i] << endl;
+    }
+    bookOut.close();
+
+    if (!studentFound) {
         cout << "No student found with username: " << username << endl;
     }
 }
+
 void approveBorrowRequest() {
     string username, password, borrowRequest, returnRequest;
     int balance;
@@ -291,7 +344,7 @@ void librarian(){
                 approveBorrowRequest();
                 break;
             case 3:
-                //acceptReturn();
+                acceptReturn();
                 break;
             case 4:
                 changeAdminPassword();
