@@ -47,7 +47,7 @@ void approveBorrowRequest() {
     updatedFile.close();
 
     if (!anyRequestFound) {
-        cout << "No borrow requests found.\n";
+        cout << "No borrow requests found.\n\n";
     }
 
     ofstream bookOut("booksDB.txt");
@@ -73,7 +73,8 @@ void viewPersonalDetails(const string& username) {
             cout << "Username: " << fileUsername << endl;
             cout << "Account Balance: " << balance << endl;
             cout << "Borrow Request: " << borrowRequest << endl;
-            cout << "Return Request: " << returnRequest << endl;
+            cout << "Return Request: " << returnRequest <<"\n";
+            cout << "------------------------\n\n";
             found = true;
             break;
         }
@@ -188,8 +189,8 @@ void student() {
         do {
             cout << "Select one option below\n";
             cout << "1. View Personal Details\n";
-            cout << "2. Request to borrow/rent a book\n";
-            cout << "3. Return borrowed/rented book\n";
+            cout << "2. Request to borrow a book\n";
+            cout << "3. Return borrowed book\n";
             cout << "4. Change password\n";
             cout << "5. Exit\n\n";
             cout << "Enter option to proceed: ";
@@ -278,7 +279,7 @@ int main()
     int role;
     cout<<"******Welcome to the Library ******\n\n";
     cout<<"Select your role to proceed:";
-    cout<<"\n\t1.Normal Student Login\n";
+    cout<<"\n\t1.Student Login\n";
     cout<<"\t2.Librarian Login\n\n";
     cout<<"Enter your role to proceed: ";
     cin>>role;
